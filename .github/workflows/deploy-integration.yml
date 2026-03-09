@@ -42,38 +42,35 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Normalize workflow vars (trim CR/whitespace)
-        shell: bash
         run: |
+          # trim: reads from stdin, strips CR and leading/trailing whitespace
           trim() {
-            # strips carriage-returns and leading/trailing whitespace
-            printf '%s' "$1" \
-              | tr -d '\r' \
-              | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
+            tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
           }
 
           {
-            echo "STACK_NAME=$(trim "${{ vars.STACK_NAME }}")"
-            echo "S3_BUCKET=$(trim "${{ vars.S3_BUCKET }}")"
-            echo "AWS_REGION=$(trim "${{ vars.AWS_REGION }}")"
-            echo "AWS_ROLE_ARN=$(trim "${{ vars.aws_role_arn }}")"
+            printf 'STACK_NAME=%s\n' "$(printf '%s' '${{ vars.STACK_NAME }}'               | trim)"
+            printf 'S3_BUCKET=%s\n'   "$(printf '%s' '${{ vars.S3_BUCKET }}'               | trim)"
+            printf 'AWS_REGION=%s\n'  "$(printf '%s' '${{ vars.AWS_REGION }}'              | trim)"
+            printf 'AWS_ROLE_ARN=%s\n' "$(printf '%s' '${{ vars.aws_role_arn }}'          | trim)"
 
-            echo "SCHEDULE=$(trim "${{ vars.SCHEDULE }}")"
-            echo "LOG_LEVEL=$(trim "${{ vars.LOG_LEVEL }}")"
-            echo "ALERT_EMAIL_OVERRIDE=$(trim "${{ vars.ALERT_EMAIL_OVERRIDE }}")"
-            echo "SCHEDULE_EVAL_PERIODS=$(trim "${{ vars.SCHEDULE_EVAL_PERIODS }}")"
-            echo "SCHEDULE_ALARM_WINDOW=$(trim "${{ vars.SCHEDULE_ALARM_WINDOW }}")"
+            printf 'SCHEDULE=%s\n'              "$(printf '%s' '${{ vars.SCHEDULE }}'              | trim)"
+            printf 'LOG_LEVEL=%s\n'             "$(printf '%s' '${{ vars.LOG_LEVEL }}'             | trim)"
+            printf 'ALERT_EMAIL_OVERRIDE=%s\n'  "$(printf '%s' '${{ vars.ALERT_EMAIL_OVERRIDE }}'  | trim)"
+            printf 'SCHEDULE_EVAL_PERIODS=%s\n' "$(printf '%s' '${{ vars.SCHEDULE_EVAL_PERIODS }}' | trim)"
+            printf 'SCHEDULE_ALARM_WINDOW=%s\n' "$(printf '%s' '${{ vars.SCHEDULE_ALARM_WINDOW }}' | trim)"
 
-            echo "OPTIONAL_ALARM1_FILTER=$(trim "${{ vars.OPTIONAL_ALARM1_FILTER }}")"
-            echo "OPTIONAL_ALARM1_WINDOW=$(trim "${{ vars.OPTIONAL_ALARM1_WINDOW }}")"
-            echo "OPTIONAL_ALARM1_STATISTIC=$(trim "${{ vars.OPTIONAL_ALARM1_STATISTIC }}")"
-            echo "OPTIONAL_ALARM1_THRESHOLD=$(trim "${{ vars.OPTIONAL_ALARM1_THRESHOLD }}")"
-            echo "OPTIONAL_ALARM1_COMPARISON_OPERATOR=$(trim "${{ vars.OPTIONAL_ALARM1_COMPARISON_OPERATOR }}")"
+            printf 'OPTIONAL_ALARM1_FILTER=%s\n'              "$(printf '%s' '${{ vars.OPTIONAL_ALARM1_FILTER }}'              | trim)"
+            printf 'OPTIONAL_ALARM1_WINDOW=%s\n'              "$(printf '%s' '${{ vars.OPTIONAL_ALARM1_WINDOW }}'              | trim)"
+            printf 'OPTIONAL_ALARM1_STATISTIC=%s\n'           "$(printf '%s' '${{ vars.OPTIONAL_ALARM1_STATISTIC }}'           | trim)"
+            printf 'OPTIONAL_ALARM1_THRESHOLD=%s\n'           "$(printf '%s' '${{ vars.OPTIONAL_ALARM1_THRESHOLD }}'           | trim)"
+            printf 'OPTIONAL_ALARM1_COMPARISON_OPERATOR=%s\n' "$(printf '%s' '${{ vars.OPTIONAL_ALARM1_COMPARISON_OPERATOR }}' | trim)"
 
-            echo "OPTIONAL_ALARM2_FILTER=$(trim "${{ vars.OPTIONAL_ALARM2_FILTER }}")"
-            echo "OPTIONAL_ALARM2_WINDOW=$(trim "${{ vars.OPTIONAL_ALARM2_WINDOW }}")"
-            echo "OPTIONAL_ALARM2_STATISTIC=$(trim "${{ vars.OPTIONAL_ALARM2_STATISTIC }}")"
-            echo "OPTIONAL_ALARM2_THRESHOLD=$(trim "${{ vars.OPTIONAL_ALARM2_THRESHOLD }}")"
-            echo "OPTIONAL_ALARM2_COMPARISON_OPERATOR=$(trim "${{ vars.OPTIONAL_ALARM2_COMPARISON_OPERATOR }}")"
+            printf 'OPTIONAL_ALARM2_FILTER=%s\n'              "$(printf '%s' '${{ vars.OPTIONAL_ALARM2_FILTER }}'              | trim)"
+            printf 'OPTIONAL_ALARM2_WINDOW=%s\n'              "$(printf '%s' '${{ vars.OPTIONAL_ALARM2_WINDOW }}'              | trim)"
+            printf 'OPTIONAL_ALARM2_STATISTIC=%s\n'           "$(printf '%s' '${{ vars.OPTIONAL_ALARM2_STATISTIC }}'           | trim)"
+            printf 'OPTIONAL_ALARM2_THRESHOLD=%s\n'           "$(printf '%s' '${{ vars.OPTIONAL_ALARM2_THRESHOLD }}'           | trim)"
+            printf 'OPTIONAL_ALARM2_COMPARISON_OPERATOR=%s\n' "$(printf '%s' '${{ vars.OPTIONAL_ALARM2_COMPARISON_OPERATOR }}' | trim)"
           } >> "$GITHUB_ENV"
 
       - name: Configure AWS credentials via OIDC
@@ -91,7 +88,6 @@ jobs:
         run: sam build --use-container --no-cached
 
       - name: SAM deploy
-        shell: bash
         env:
           ENVIRONMENT: ${{ inputs.environment }}
           TRIGGER_TYPE: ${{ inputs.trigger_type }}
