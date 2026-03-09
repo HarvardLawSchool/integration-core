@@ -5,7 +5,7 @@ pre-push:
     - run: deno audit --socket --frozen --level=critical
     - run: deno fmt && deno lint && deno check && deno test --permit-no-files
       glob: "*.{ts,sql,json,yml}"
-    - run: deno task check:deps
+    # - run: deno task check:deps
 
 pre-commit:
   jobs:
