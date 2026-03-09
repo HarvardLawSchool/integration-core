@@ -41,6 +41,40 @@ jobs:
       - name: Checkout integration repo
         uses: actions/checkout@v4
 
+      - name: Normalize workflow vars (trim CR/whitespace)
+        run: |
+          trim() {
+            # strips carriage-returns and leading/trailing whitespace
+            printf '%s' "$1" \
+              | tr -d '\r' \
+              | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
+          }
+
+          {
+            echo "STACK_NAME=$$(trim "$${{ vars.STACK_NAME }}")"
+            echo "S3_BUCKET=$$(trim "$${{ vars.S3_BUCKET }}")"
+            echo "AWS_REGION=$$(trim "$${{ vars.AWS_REGION }}")"
+            echo "AWS_ROLE_ARN=$$(trim "$${{ vars.aws_role_arn }}")"
+
+            echo "SCHEDULE=$$(trim "$${{ vars.SCHEDULE }}")"
+            echo "LOG_LEVEL=$$(trim "$${{ vars.LOG_LEVEL }}")"
+            echo "ALERT_EMAIL_OVERRIDE=$$(trim "$${{ vars.ALERT_EMAIL_OVERRIDE }}")"
+            echo "SCHEDULE_EVAL_PERIODS=$$(trim "$${{ vars.SCHEDULE_EVAL_PERIODS }}")"
+            echo "SCHEDULE_ALARM_WINDOW=$$(trim "$${{ vars.SCHEDULE_ALARM_WINDOW }}")"
+
+            echo "OPTIONAL_ALARM1_FILTER=$$(trim "$${{ vars.OPTIONAL_ALARM1_FILTER }}")"
+            echo "OPTIONAL_ALARM1_WINDOW=$$(trim "$${{ vars.OPTIONAL_ALARM1_WINDOW }}")"
+            echo "OPTIONAL_ALARM1_STATISTIC=$$(trim "$${{ vars.OPTIONAL_ALARM1_STATISTIC }}")"
+            echo "OPTIONAL_ALARM1_THRESHOLD=$$(trim "$${{ vars.OPTIONAL_ALARM1_THRESHOLD }}")"
+            echo "OPTIONAL_ALARM1_COMPARISON_OPERATOR=$$(trim "$${{ vars.OPTIONAL_ALARM1_COMPARISON_OPERATOR }}")"
+
+            echo "OPTIONAL_ALARM2_FILTER=$$(trim "$${{ vars.OPTIONAL_ALARM2_FILTER }}")"
+            echo "OPTIONAL_ALARM2_WINDOW=$$(trim "$${{ vars.OPTIONAL_ALARM2_WINDOW }}")"
+            echo "OPTIONAL_ALARM2_STATISTIC=$$(trim "$${{ vars.OPTIONAL_ALARM2_STATISTIC }}")"
+            echo "OPTIONAL_ALARM2_THRESHOLD=$$(trim "$${{ vars.OPTIONAL_ALARM2_THRESHOLD }}")"
+            echo "OPTIONAL_ALARM2_COMPARISON_OPERATOR=$$(trim "$${{ vars.OPTIONAL_ALARM2_COMPARISON_OPERATOR }}")"
+          } >> "$GITHUB_ENV"
+
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -86,7 +120,6 @@ jobs:
           [ -n "$SCHEDULE_EVAL_PERIODS" ] && PARAM_OVERRIDES+=("ScheduleEvaluationPeriods=$SCHEDULE_EVAL_PERIODS")
           [ -n "$SCHEDULE_ALARM_WINDOW" ] && PARAM_OVERRIDES+=("ScheduleAlarmWindow=$SCHEDULE_ALARM_WINDOW")
           [ -n "$LOG_LEVEL" ] && PARAM_OVERRIDES+=("LogLevel=$LOG_LEVEL")
-
 
           [ -n "$OPTIONAL_ALARM1_FILTER" ]              && PARAM_OVERRIDES+=("OptionalAlarm1FilterPattern='$OPTIONAL_ALARM1_FILTER'")
           [ -n "$OPTIONAL_ALARM1_WINDOW" ]              && PARAM_OVERRIDES+=("OptionalAlarm1Window=$OPTIONAL_ALARM1_WINDOW")
