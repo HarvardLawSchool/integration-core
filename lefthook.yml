@@ -1,0 +1,13 @@
+# https://lefthook.dev/configuration/
+
+pre-push:
+  jobs:
+    - run: deno audit --socket --frozen --level=critical
+    - run: deno fmt && deno lint && deno check && deno test --permit-no-files
+      glob: "*.{ts,sql,json,yml}"
+    - run: deno task check:deps
+
+pre-commit:
+  jobs:
+    - run: deno fmt && deno lint && deno check
+      glob: "*.{ts,sql,json,yml}"
