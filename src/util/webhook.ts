@@ -1,4 +1,4 @@
-import { ApiEvent, LambdaHandler } from "../lambda-types.ts";
+import { ApiEvent } from "../lambda-types.ts";
 import { verifyHMAC } from "./hmac.ts";
 
 export async function validateWebhookSignature(
@@ -22,7 +22,3 @@ export async function validateWebhookSignature(
     throw new Error("Invalid webhook signature");
   }
 }
-
-export const noWebhooksHandler: LambdaHandler = (_e, _c) => {
-  throw new Error("Webhooks are not handled by this app");
-};
