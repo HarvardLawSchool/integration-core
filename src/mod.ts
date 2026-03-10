@@ -4,7 +4,10 @@ export {
   useCustomConsoleLogger,
 } from "./util/logger.ts";
 export { getAwsParams, getParam } from "./util/aws-params.ts";
-export { validateWebhookSignature } from "./util/webhook.ts";
+export {
+  validateWebhookSignature,
+  WebhookRequestSchema,
+} from "./util/webhook.ts";
 export { generateHMAC, verifyHMAC } from "./util/hmac.ts";
 export { timeDifference } from "./util/time-difference.ts";
 export type {

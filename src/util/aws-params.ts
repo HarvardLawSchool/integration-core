@@ -18,9 +18,9 @@ let configCache: unknown = null;
 let cacheExpiry: Temporal.Instant | null = null;
 
 /**
- * Fetches a single SSM parameter by full path.
- * Use for one-off lookups (e.g. deno-task-utils scripts).
- * NOTE: not validated unless passed a zod schema.
+ * NOT for Lambda use -- import getConfig() from app-config.ts instead.
+ * Use this only for one-off lookups (e.g. deno-task-utils scripts).
+ * Fetches a single, unvalidated SSM parameter by full path.
  */
 export async function getParam(
   name: string,
