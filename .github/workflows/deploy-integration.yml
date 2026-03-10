@@ -23,10 +23,6 @@ on:
       environment:
         required: true
         type: string
-      trigger_type:
-        required: false
-        type: string
-        default: "both"
 
 jobs:
   deploy:
@@ -47,29 +43,15 @@ jobs:
           trim() {
             tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
           }
-
           {
-            printf 'S3_BUCKET=%s\n'   "$(printf '%s' '${{ vars.S3_BUCKET }}'               | trim)"
-            printf 'AWS_REGION=%s\n'  "$(printf '%s' '${{ vars.AWS_REGION }}'              | trim)"
             printf 'AWS_ROLE_ARN=%s\n' "$(printf '%s' '${{ vars.aws_role_arn }}'          | trim)"
-
-            printf 'SCHEDULE=%s\n'              "$(printf '%s' '${{ vars.SCHEDULE }}'              | trim)"
-            printf 'LOG_LEVEL=%s\n'             "$(printf '%s' '${{ vars.LOG_LEVEL }}'             | trim)"
+            printf 'AWS_REGION=%s\n'  "$(printf '%s' '${{ vars.AWS_REGION }}'              | trim)"
+            printf 'S3_BUCKET=%s\n'   "$(printf '%s' '${{ vars.S3_BUCKET }}'               | trim)"
             printf 'ALERT_EMAIL_OVERRIDE=%s\n'  "$(printf '%s' '${{ vars.ALERT_EMAIL_OVERRIDE }}'  | trim)"
-            printf 'SCHEDULE_EVAL_PERIODS=%s\n' "$(printf '%s' '${{ vars.SCHEDULE_EVAL_PERIODS }}' | trim)"
+            printf 'SCHEDULE=%s\n'              "$(printf '%s' '${{ vars.SCHEDULE }}'              | trim)"
             printf 'SCHEDULE_ALARM_WINDOW=%s\n' "$(printf '%s' '${{ vars.SCHEDULE_ALARM_WINDOW }}' | trim)"
-
-            printf 'OPTIONAL_ALARM1_FILTER=%s\n'              "$(printf '%s' '${{ vars.OPTIONAL_ALARM1_FILTER }}'              | trim)"
-            printf 'OPTIONAL_ALARM1_WINDOW=%s\n'              "$(printf '%s' '${{ vars.OPTIONAL_ALARM1_WINDOW }}'              | trim)"
-            printf 'OPTIONAL_ALARM1_STATISTIC=%s\n'           "$(printf '%s' '${{ vars.OPTIONAL_ALARM1_STATISTIC }}'           | trim)"
-            printf 'OPTIONAL_ALARM1_THRESHOLD=%s\n'           "$(printf '%s' '${{ vars.OPTIONAL_ALARM1_THRESHOLD }}'           | trim)"
-            printf 'OPTIONAL_ALARM1_COMPARISON_OPERATOR=%s\n' "$(printf '%s' '${{ vars.OPTIONAL_ALARM1_COMPARISON_OPERATOR }}' | trim)"
-
-            printf 'OPTIONAL_ALARM2_FILTER=%s\n'              "$(printf '%s' '${{ vars.OPTIONAL_ALARM2_FILTER }}'              | trim)"
-            printf 'OPTIONAL_ALARM2_WINDOW=%s\n'              "$(printf '%s' '${{ vars.OPTIONAL_ALARM2_WINDOW }}'              | trim)"
-            printf 'OPTIONAL_ALARM2_STATISTIC=%s\n'           "$(printf '%s' '${{ vars.OPTIONAL_ALARM2_STATISTIC }}'           | trim)"
-            printf 'OPTIONAL_ALARM2_THRESHOLD=%s\n'           "$(printf '%s' '${{ vars.OPTIONAL_ALARM2_THRESHOLD }}'           | trim)"
-            printf 'OPTIONAL_ALARM2_COMPARISON_OPERATOR=%s\n' "$(printf '%s' '${{ vars.OPTIONAL_ALARM2_COMPARISON_OPERATOR }}' | trim)"
+            printf 'SCHEDULE_EVAL_PERIODS=%s\n' "$(printf '%s' '${{ vars.SCHEDULE_EVAL_PERIODS }}' | trim)"
+            printf 'LOG_LEVEL=%s\n'             "$(printf '%s' '${{ vars.LOG_LEVEL }}'             | trim)"
           } >> "$GITHUB_ENV"
 
       - name: Configure AWS credentials via OIDC
@@ -89,51 +71,22 @@ jobs:
       - name: SAM deploy
         env:
           ENVIRONMENT: ${{ inputs.environment }}
-          TRIGGER_TYPE: ${{ inputs.trigger_type }}
-
-          S3_BUCKET: ${{ env.S3_BUCKET }}
           AWS_REGION: ${{ env.AWS_REGION }}
-
-          SCHEDULE: ${{ env.SCHEDULE }}
-          LOG_LEVEL: ${{ env.LOG_LEVEL }}
+          S3_BUCKET: ${{ env.S3_BUCKET }}
           ALERT_EMAIL_OVERRIDE: ${{ env.ALERT_EMAIL_OVERRIDE }}
-          SCHEDULE_EVAL_PERIODS: ${{ env.SCHEDULE_EVAL_PERIODS }}
+          SCHEDULE: ${{ env.SCHEDULE }}
           SCHEDULE_ALARM_WINDOW: ${{ env.SCHEDULE_ALARM_WINDOW }}
-
-          OPTIONAL_ALARM1_FILTER: ${{ env.OPTIONAL_ALARM1_FILTER }}
-          OPTIONAL_ALARM1_WINDOW: ${{ env.OPTIONAL_ALARM1_WINDOW }}
-          OPTIONAL_ALARM1_STATISTIC: ${{ env.OPTIONAL_ALARM1_STATISTIC }}
-          OPTIONAL_ALARM1_THRESHOLD: ${{ env.OPTIONAL_ALARM1_THRESHOLD }}
-          OPTIONAL_ALARM1_COMPARISON_OPERATOR: ${{ env.OPTIONAL_ALARM1_COMPARISON_OPERATOR }}
-
-          OPTIONAL_ALARM2_FILTER: ${{ env.OPTIONAL_ALARM2_FILTER }}
-          OPTIONAL_ALARM2_WINDOW: ${{ env.OPTIONAL_ALARM2_WINDOW }}
-          OPTIONAL_ALARM2_STATISTIC: ${{ env.OPTIONAL_ALARM2_STATISTIC }}
-          OPTIONAL_ALARM2_THRESHOLD: ${{ env.OPTIONAL_ALARM2_THRESHOLD }}
-          OPTIONAL_ALARM2_COMPARISON_OPERATOR: ${{ env.OPTIONAL_ALARM2_COMPARISON_OPERATOR }}
+          SCHEDULE_EVAL_PERIODS: ${{ env.SCHEDULE_EVAL_PERIODS }}
+          LOG_LEVEL: ${{ env.LOG_LEVEL }}
         run: |
           PARAM_OVERRIDES=(
-            "TriggerType=$TRIGGER_TYPE"
-            "AlertTopicArn=/integrations/shared/AlertTopicArn"
             "Environment=$ENVIRONMENT"
           )
-
-          [ -n "$SCHEDULE" ]              && PARAM_OVERRIDES+=("ScheduleExpression='$SCHEDULE'")
           [ -n "$ALERT_EMAIL_OVERRIDE" ]  && PARAM_OVERRIDES+=("AlertEmailOverride=$ALERT_EMAIL_OVERRIDE")
+          [ -n "$SCHEDULE" ]              && PARAM_OVERRIDES+=("ScheduleExpression='$SCHEDULE'")
           [ -n "$SCHEDULE_EVAL_PERIODS" ] && PARAM_OVERRIDES+=("ScheduleEvaluationPeriods=$SCHEDULE_EVAL_PERIODS")
           [ -n "$SCHEDULE_ALARM_WINDOW" ] && PARAM_OVERRIDES+=("ScheduleAlarmWindow=$SCHEDULE_ALARM_WINDOW")
           [ -n "$LOG_LEVEL" ]             && PARAM_OVERRIDES+=("LogLevel=$LOG_LEVEL")
-
-          [ -n "$OPTIONAL_ALARM1_FILTER" ]              && PARAM_OVERRIDES+=("OptionalAlarm1FilterPattern='$OPTIONAL_ALARM1_FILTER'")
-          [ -n "$OPTIONAL_ALARM1_WINDOW" ]              && PARAM_OVERRIDES+=("OptionalAlarm1Window=$OPTIONAL_ALARM1_WINDOW")
-          [ -n "$OPTIONAL_ALARM1_STATISTIC" ]           && PARAM_OVERRIDES+=("OptionalAlarm1Statistic=$OPTIONAL_ALARM1_STATISTIC")
-          [ -n "$OPTIONAL_ALARM1_THRESHOLD" ]           && PARAM_OVERRIDES+=("OptionalAlarm1Threshold=$OPTIONAL_ALARM1_THRESHOLD")
-          [ -n "$OPTIONAL_ALARM1_COMPARISON_OPERATOR" ] && PARAM_OVERRIDES+=("OptionalAlarm1ComparisonOperator=$OPTIONAL_ALARM1_COMPARISON_OPERATOR")
-          [ -n "$OPTIONAL_ALARM2_FILTER" ]              && PARAM_OVERRIDES+=("OptionalAlarm2FilterPattern='$OPTIONAL_ALARM2_FILTER'")
-          [ -n "$OPTIONAL_ALARM2_WINDOW" ]              && PARAM_OVERRIDES+=("OptionalAlarm2Window=$OPTIONAL_ALARM2_WINDOW")
-          [ -n "$OPTIONAL_ALARM2_STATISTIC" ]           && PARAM_OVERRIDES+=("OptionalAlarm2Statistic=$OPTIONAL_ALARM2_STATISTIC")
-          [ -n "$OPTIONAL_ALARM2_THRESHOLD" ]           && PARAM_OVERRIDES+=("OptionalAlarm2Threshold=$OPTIONAL_ALARM2_THRESHOLD")
-          [ -n "$OPTIONAL_ALARM2_COMPARISON_OPERATOR" ] && PARAM_OVERRIDES+=("OptionalAlarm2ComparisonOperator=$OPTIONAL_ALARM2_COMPARISON_OPERATOR")
 
           printf '%s\n' "${PARAM_OVERRIDES[@]}"
 
