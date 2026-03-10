@@ -82,7 +82,7 @@ jobs:
         run: |
           PARAM_OVERRIDES=(
             "Environment=${{ inputs.environment }}"
-            "TriggerType=${TRIGGER_TYPE:-scheduled}"
+            "TriggerType=${TRIGGER_TYPE:-schedule}"
           )
           [ -n "$ALERT_EMAIL_OVERRIDE" ]  && PARAM_OVERRIDES+=("AlertEmailOverride=$ALERT_EMAIL_OVERRIDE")
           [ -n "$SCHEDULE" ]              && PARAM_OVERRIDES+=("ScheduleExpression='$SCHEDULE'")
