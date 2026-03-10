@@ -49,7 +49,6 @@ jobs:
           }
 
           {
-            printf 'STACK_NAME=%s\n' "$(printf '%s' '${{ vars.STACK_NAME }}'               | trim)"
             printf 'S3_BUCKET=%s\n'   "$(printf '%s' '${{ vars.S3_BUCKET }}'               | trim)"
             printf 'AWS_REGION=%s\n'  "$(printf '%s' '${{ vars.AWS_REGION }}'              | trim)"
             printf 'AWS_ROLE_ARN=%s\n' "$(printf '%s' '${{ vars.aws_role_arn }}'          | trim)"
@@ -92,7 +91,6 @@ jobs:
           ENVIRONMENT: ${{ inputs.environment }}
           TRIGGER_TYPE: ${{ inputs.trigger_type }}
 
-          STACK_NAME: ${{ env.STACK_NAME }}
           S3_BUCKET: ${{ env.S3_BUCKET }}
           AWS_REGION: ${{ env.AWS_REGION }}
 
@@ -140,7 +138,6 @@ jobs:
           printf '%s\n' "${PARAM_OVERRIDES[@]}"
 
           sam deploy \
-            --stack-name "$STACK_NAME" \
             --s3-bucket "$S3_BUCKET" \
             --region "$AWS_REGION" \
             --capabilities CAPABILITY_NAMED_IAM \
