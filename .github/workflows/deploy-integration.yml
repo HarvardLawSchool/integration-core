@@ -23,6 +23,42 @@ on:
       environment:
         required: true
         type: string
+      stack_name:
+        required: true
+        type: string
+      aws_region:
+        required: true
+        type: string
+      s3_bucket:
+        required: true
+        type: string
+      aws_role_arn:
+        required: true
+        type: string
+      trigger_type:
+        required: false
+        type: string
+        default: ""
+      alert_email_override:
+        required: false
+        type: string
+        default: ""
+      schedule:
+        required: false
+        type: string
+        default: ""
+      schedule_alarm_window:
+        required: false
+        type: string
+        default: ""
+      schedule_eval_periods:
+        required: false
+        type: string
+        default: ""
+      log_level:
+        required: false
+        type: string
+        default: ""
 
 jobs:
   deploy:
@@ -35,31 +71,13 @@ jobs:
 
     steps:
       - name: Checkout integration repo
-        uses: actions/checkout@v4
-
-      - name: Normalize workflow vars (trim CR/whitespace)
-        run: |
-          # trim: reads from stdin, strips CR and leading/trailing whitespace
-          trim() {
-            tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
-          }
-          {
-            printf 'AWS_ROLE_ARN=%s\n'          "$(printf '%s' '${{ vars.AWS_ROLE_ARN }}'         | trim)"
-            printf 'AWS_REGION=%s\n'            "$(printf '%s' '${{ vars.AWS_REGION }}'           | trim)"
-            printf 'S3_BUCKET=%s\n'             "$(printf '%s' '${{ vars.S3_BUCKET }}'            | trim)"
-            printf 'TRIGGER_TYPE=%s\n'          "$(printf '%s' '${{ vars.TRIGGER_TYPE }}'         | trim)"
-            printf 'ALERT_EMAIL_OVERRIDE=%s\n'  "$(printf '%s' '${{ vars.ALERT_EMAIL_OVERRIDE }}' | trim)"
-            printf 'SCHEDULE=%s\n'              "$(printf '%s' '${{ vars.SCHEDULE }}'             | trim)"
-            printf 'SCHEDULE_ALARM_WINDOW=%s\n' "$(printf '%s' '${{ vars.SCHEDULE_ALARM_WINDOW }}' | trim)"
-            printf 'SCHEDULE_EVAL_PERIODS=%s\n' "$(printf '%s' '${{ vars.SCHEDULE_EVAL_PERIODS }}' | trim)"
-            printf 'LOG_LEVEL=%s\n'             "$(printf '%s' '${{ vars.LOG_LEVEL }}'            | trim)"
-          } >> "$GITHUB_ENV"
+        uses: actions/checkout@v5
 
       - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ inputs.aws_role_arn }}
+          aws-region: ${{ inputs.aws_region }}
 
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@v2
@@ -71,14 +89,12 @@ jobs:
 
       - name: SAM deploy
         env:
-          AWS_REGION: ${{ env.AWS_REGION }}
-          S3_BUCKET: ${{ env.S3_BUCKET }}
-          TRIGGER_TYPE: ${{ env.TRIGGER_TYPE }}
-          ALERT_EMAIL_OVERRIDE: ${{ env.ALERT_EMAIL_OVERRIDE }}
-          SCHEDULE: ${{ env.SCHEDULE }}
-          SCHEDULE_ALARM_WINDOW: ${{ env.SCHEDULE_ALARM_WINDOW }}
-          SCHEDULE_EVAL_PERIODS: ${{ env.SCHEDULE_EVAL_PERIODS }}
-          LOG_LEVEL: ${{ env.LOG_LEVEL }}
+          TRIGGER_TYPE: ${{ inputs.trigger_type }}
+          ALERT_EMAIL_OVERRIDE: ${{ inputs.alert_email_override }}
+          SCHEDULE: ${{ inputs.schedule }}
+          SCHEDULE_ALARM_WINDOW: ${{ inputs.schedule_alarm_window }}
+          SCHEDULE_EVAL_PERIODS: ${{ inputs.schedule_eval_periods }}
+          LOG_LEVEL: ${{ inputs.log_level }}
         run: |
           PARAM_OVERRIDES=(
             "Environment=${{ inputs.environment }}"
@@ -93,8 +109,9 @@ jobs:
           printf '%s\n' "${PARAM_OVERRIDES[@]}"
 
           sam deploy \
-            --s3-bucket "$S3_BUCKET" \
-            --region "$AWS_REGION" \
+            --stack-name "${{ inputs.stack_name }}" \
+            --s3-bucket "${{ inputs.s3_bucket }}" \
+            --region "${{ inputs.aws_region }}" \
             --capabilities CAPABILITY_NAMED_IAM \
             --no-confirm-changeset \
             --no-resolve-s3 \
