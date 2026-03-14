@@ -2,7 +2,8 @@
   "license": "MIT",
   "tasks": {
     "check": "deno fmt && deno lint && deno check && deno test --permit-no-files",
-    "clean": "rm -rf .aws-sam build"
+    "clean": "rm -rf .aws-sam build",
+    "audit": "deno audit --socket --level=critical"
   },
   "lock": {
     "frozen": true
