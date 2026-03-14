@@ -6,6 +6,8 @@ export {
 export { getAwsParams, getParam } from "./util/aws-params.ts";
 export {
   validateWebhookSignature,
+  type WebhookEvent,
+  WebhookEventSchema,
   WebhookRequestSchema,
 } from "./util/webhook.ts";
 export { generateHMAC, verifyHMAC } from "./util/hmac.ts";

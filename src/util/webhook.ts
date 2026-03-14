@@ -24,12 +24,12 @@ export async function validateWebhookSignature(
   }
 }
 
-const WebhookEventSchema = z.object({
+export const WebhookEventSchema = z.object({
   type: z.string().optional(),
   typestamp: z.iso.datetime().optional(),
   data: z.unknown().optional(),
 });
-// export type WebhookEvent = z.infer<typeof WebhookEventSchema>;
+export type WebhookEvent = z.infer<typeof WebhookEventSchema>;
 
 const SignatureSchema = z.string().regex(
   /^(sha256=|v1=)?[a-f0-9]{64}$/i,
