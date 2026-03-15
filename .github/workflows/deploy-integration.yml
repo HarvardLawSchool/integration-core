@@ -101,10 +101,13 @@ jobs:
             "TriggerType=${TRIGGER_TYPE:-schedule}"
           )
           [ -n "$ALERT_EMAIL_OVERRIDE" ]  && PARAM_OVERRIDES+=("AlertEmailOverride=$ALERT_EMAIL_OVERRIDE")
-          [ -n "$SCHEDULE" ]              && PARAM_OVERRIDES+=("ScheduleExpression='$SCHEDULE'")
-          [ -n "$SCHEDULE_EVAL_PERIODS" ] && PARAM_OVERRIDES+=("ScheduleEvaluationPeriods=$SCHEDULE_EVAL_PERIODS")
-          [ -n "$SCHEDULE_ALARM_WINDOW" ] && PARAM_OVERRIDES+=("ScheduleAlarmWindow=$SCHEDULE_ALARM_WINDOW")
           [ -n "$LOG_LEVEL" ]             && PARAM_OVERRIDES+=("LogLevel=$LOG_LEVEL")
+
+          if [ "${TRIGGER_TYPE}" != "webhook" ]; then
+            [ -n "$SCHEDULE" ]              && PARAM_OVERRIDES+=("ScheduleExpression='$SCHEDULE'")
+            [ -n "$SCHEDULE_EVAL_PERIODS" ] && PARAM_OVERRIDES+=("ScheduleEvaluationPeriods=$SCHEDULE_EVAL_PERIODS")
+            [ -n "$SCHEDULE_ALARM_WINDOW" ] && PARAM_OVERRIDES+=("ScheduleAlarmWindow=$SCHEDULE_ALARM_WINDOW")
+          fi
 
           printf '%s\n' "${PARAM_OVERRIDES[@]}"
 

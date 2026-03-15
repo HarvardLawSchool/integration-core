@@ -9,11 +9,12 @@
     "frozen": true
   },
   "minimumDependencyAge": "P5D", // security threshold in days that new dependency versions may be included
+  // essentially "dev-dependencies" - range preferred here, '--save-exact' from importing project to pin to at least these versions
   "imports": {
-    "@aws-sdk/client-ssm": "npm:@aws-sdk/client-ssm@3.1001.0",
-    "@std/crypto": "jsr:@std/crypto@1.0.5",
-    "loglevel": "npm:loglevel@1.9.2",
-    "zod": "npm:zod@4.3.6"
+    "@aws-sdk/client-ssm": "npm:@aws-sdk/client-ssm@^3.1001.0",
+    "@std/crypto": "jsr:@std/crypto@^1.0.5",
+    "loglevel": "npm:loglevel@^1.9.2",
+    "zod": "npm:zod@^4.3.6"
   },
   "exclude": [".tmp"],
   "vscode": {
