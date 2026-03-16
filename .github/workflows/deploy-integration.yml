@@ -13,6 +13,20 @@
 #   3. Consider using a feature branch and updating integrations one at a time
 #
 # Non-breaking changes (new optional inputs with defaults, added steps) are safe.
+#
+### Approval Gate
+# Production deployments require manual approval from the DevOps team.
+#
+# Setup required in each integration repo (one-time per repo):
+#   Repo → Settings → Environments → production
+#     ✅ Required reviewers: your-org/devops team
+#     ✅ Deployment branches: release/prod only (recommended)
+#     ❌ DO NOT enable Prevent self-review — devops may approve their own trigger
+#
+# Flow:
+#   Any dev/devop can trigger a prod deployment (write access to repo)
+#   Only devops team members can approve it
+#   Triggering devop CAN self-approve
 # ──────────────────────────────────────────────────────────────────────────────
 
 name: Deploy Integration (Reusable)
@@ -61,7 +75,34 @@ on:
         default: ""
 
 jobs:
+  ### Approval Gate
+  #
+  # Skipped entirely for non-production environments (dev flows through).
+  # For production: pauses here and notifies required reviewers.
+  # The deploy job will not start until this job completes successfully.
+  await-approval:
+    if: inputs.environment == 'prod'
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Approval checkpoint
+        run: |
+          echo "✅ Production deployment approved"
+          echo "Approved by: ${{ github.actor }}"
+          echo "Ref:         ${{ github.ref }}"
+          echo "Stack:       ${{ inputs.stack_name }}"
+          echo "Region:      ${{ inputs.aws_region }}"
+
+  ### Deploy
+  # Runs immediately for dev (await-approval skipped).
+  # Runs after approval for production.
   deploy:
+    needs: await-approval
+    if: |
+      always() && (
+        needs.await-approval.result == 'success' ||
+        needs.await-approval.result == 'skipped'
+      )
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
 
