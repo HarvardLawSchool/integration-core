@@ -83,7 +83,7 @@ jobs:
   await-approval:
     if: inputs.environment == 'prod'
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: prod
     steps:
       - name: Approval checkpoint
         run: |
