@@ -1,4 +1,4 @@
-# ── Reusable Deploy Workflow ───────────────────────────────────────────────────
+### Reusable Deploy Workflow
 # Called by integration repos via:
 #   uses: [ORG]/[REPO]/.github/workflows/deploy-integration.yml@main
 #
@@ -17,17 +17,10 @@
 ### Approval Gate
 # Production deployments require manual approval from the DevOps team.
 #
-# Setup required in each integration repo (one-time per repo):
-#   Repo → Settings → Environments → production
-#     ✅ Required reviewers: your-org/devops team
-#     ✅ Deployment branches: release/prod only (recommended)
-#     ❌ DO NOT enable Prevent self-review — devops may approve their own trigger
-#
-# Flow:
-#   Any dev/devop can trigger a prod deployment (write access to repo)
-#   Only devops team members can approve it
-#   Triggering devop CAN self-approve
-# ──────────────────────────────────────────────────────────────────────────────
+# One-time setup (integration-core repo):
+#   Repo / Settings / Environments / prod
+#     - Required reviewers: org/devops and/or individuals
+#     - Deployment branches: release/prod only
 
 name: Deploy Integration (Reusable)
 
