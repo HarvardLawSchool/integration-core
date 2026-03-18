@@ -1,4 +1,4 @@
-# ── Reusable Deploy Workflow ───────────────────────────────────────────────────
+### Reusable Deploy Workflow
 # Called by integration repos via:
 #   uses: [ORG]/[REPO]/.github/workflows/deploy-integration.yml@main
 #
@@ -13,7 +13,14 @@
 #   3. Consider using a feature branch and updating integrations one at a time
 #
 # Non-breaking changes (new optional inputs with defaults, added steps) are safe.
-# ──────────────────────────────────────────────────────────────────────────────
+#
+### Approval Gate
+# Production deployments require manual approval from the DevOps team.
+#
+# One-time setup (integration-core repo):
+#   Repo / Settings / Environments / prod
+#     - Required reviewers: org/devops and/or individuals
+#     - Deployment branches: release/prod only
 
 name: Deploy Integration (Reusable)
 
@@ -61,7 +68,34 @@ on:
         default: ""
 
 jobs:
+  ### Approval Gate
+  #
+  # Skipped entirely for non-production environments (dev flows through).
+  # For production: pauses here and notifies required reviewers.
+  # The deploy job will not start until this job completes successfully.
+  await-approval:
+    if: inputs.environment == 'prod'
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Approval checkpoint
+        run: |
+          echo "✅ Production deployment approved"
+          echo "Approved by: ${{ github.actor }}"
+          echo "Ref:         ${{ github.ref }}"
+          echo "Stack:       ${{ inputs.stack_name }}"
+          echo "Region:      ${{ inputs.aws_region }}"
+
+  ### Deploy
+  # Runs immediately for dev (await-approval skipped).
+  # Runs after approval for production.
   deploy:
+    needs: await-approval
+    if: |
+      always() && (
+        needs.await-approval.result == 'success' ||
+        needs.await-approval.result == 'skipped'
+      )
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
 
