@@ -1,13 +1,22 @@
 # https://lefthook.dev/configuration/
 
 pre-push:
+  piped: true
   jobs:
     - run: deno task audit
-    - run: deno fmt && deno lint && deno check && deno test --permit-no-files
+    - run: deno fmt --check {push_files}
       glob: "*.{ts,sql,json,yml}"
-    # - run: deno task check:deps
+    - run: deno lint {push_files}
+      glob: "*.ts"
+    - run: deno check && deno test --permit-no-files # whole project
 
 pre-commit:
+  piped: true
   jobs:
-    - run: deno fmt && deno lint && deno check
+    - run: deno fmt {staged_files}
       glob: "*.{ts,sql,json,yml}"
+      stage_fixed: true
+    - run: deno lint --fix {staged_files}
+      glob: "*.ts"
+      stage_fixed: true
+    - run: deno check # whole project
