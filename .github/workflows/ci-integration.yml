@@ -29,6 +29,9 @@ jobs:
         with:
           deno-version: "v2.7.x"
 
+      - name: Audit # fail fast: reads lockfile, can catch problems before an install
+        run: deno audit --socket --level=critical
+
       - name: Format
         run: deno fmt --check
 
@@ -40,6 +43,3 @@ jobs:
 
       - name: Test
         run: deno test --permit-no-files
-
-      - name: Audit
-        run: deno audit --socket --level=critical
