@@ -40,3 +40,6 @@ jobs:
 
       - name: Test
         run: deno test --permit-no-files
+
+      - name: Audit
+        run: deno audit --socket --level=critical
