@@ -1,0 +1,42 @@
+### Reusable CI Workflow
+# Called by integration repos via:
+#   uses: HarvardLawSchool/integration-core/.github/workflows/ci-integration.yml@main
+#
+# *** BREAKING CHANGE WARNING ***
+# This workflow is referenced at @main by all integration repos.
+# Any breaking change here (changed deno-version, removed or reordered steps)
+# takes effect IMMEDIATELY across every integration on their next CI run.
+#
+# Before merging changes to this file:
+#   1. Test against at least one integration repo manually
+#   2. Announce changes to integration developers
+#   3. Consider using a feature branch and updating integrations one at a time
+#
+# Non-breaking changes (new optional inputs with defaults, added steps) are safe.
+
+name: CI Integration (Reusable)
+
+on: workflow_call
+
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: "v2.7.x"
+
+      - name: Format
+        run: deno fmt --check
+
+      - name: Lint
+        run: deno lint
+
+      - name: Type Check
+        run: deno check
+
+      - name: Test
+        run: deno test --permit-no-files
