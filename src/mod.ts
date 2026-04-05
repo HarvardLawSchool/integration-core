@@ -7,7 +7,7 @@ export {
   getAwsParams,
   getParam,
   setAwsParamsStatePath,
-  type TemporalInstantSchema,
+  TemporalInstantSchema,
 } from "./util/aws-params.ts";
 export {
   validateWebhookSignature,
