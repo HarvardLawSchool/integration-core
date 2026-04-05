@@ -3,7 +3,12 @@ export {
   default as log,
   useCustomConsoleLogger,
 } from "./util/logger.ts";
-export { getAwsParams, getParam } from "./util/aws-params.ts";
+export {
+  getAwsParams,
+  getParam,
+  setAwsParamsStatePath,
+  type TemporalInstantSchema,
+} from "./util/aws-params.ts";
 export {
   validateWebhookSignature,
   type WebhookEvent,
