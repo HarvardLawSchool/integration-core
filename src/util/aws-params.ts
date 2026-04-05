@@ -3,6 +3,7 @@ import {
   GetParameterCommand,
   GetParametersByPathCommand,
   type Parameter,
+  PutParameterCommand,
   SSMClient,
 } from "@aws-sdk/client-ssm";
 
@@ -115,4 +116,30 @@ export async function getAwsParams<T extends ZodType>(
   cacheExpiry = now.add({ milliseconds: CACHE_TTL_MS });
 
   return configCache as z.infer<T>;
+}
+
+/**
+ * Store simple/small (< 4KB) Lambda STATE (e.g., LAST_SUCCESSFUL_RUN)
+ * NOTE subPathKey must be SCREAMING_SNAKE_CASE.
+ * For larger/complex data consider DynamoDB or S3
+ * @param subPathKey - sub-path under /PARAMS_NAME/STATE/
+ */
+export async function setAwsParamsStatePath(
+  subPathKey: string,
+  value: string | undefined,
+) {
+  if (!SCREAMING_SNAKE_CASE.test(subPathKey)) {
+    console.warn(
+      `Ignoring STATE sub-path parameter "${subPathKey}": does not match SCREAMING_SNAKE_CASE convention`,
+    );
+    return false;
+  }
+  const res = await ssmClient.send(
+    new PutParameterCommand({
+      Name: `${PARAMS_NAME}/STATE/${subPathKey}`,
+      Value: value,
+      Overwrite: true,
+    }),
+  );
+  return Boolean(res.$metadata.httpStatusCode === 200);
 }
