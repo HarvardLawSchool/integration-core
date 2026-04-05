@@ -149,6 +149,7 @@ export async function setAwsParamsStatePath(
     new PutParameterCommand({
       Name: `${PARAMS_NAME}/STATE/${subPathKey}`,
       Value: value,
+      Type: "SecureString",
       Overwrite: true,
     }),
   );
