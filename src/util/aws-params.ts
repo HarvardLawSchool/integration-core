@@ -15,6 +15,10 @@ const CACHE_TTL_MS = 5 * 60_000; // 5min cache
 // Shared client — reused across getAwsParams and getParam
 const ssmClient = new SSMClient();
 
+const StateParamSchema = z.string()
+  .startsWith("STATE_")
+  .regex(SCREAMING_SNAKE_CASE, "Must be SCREAMING_SNAKE_CASE");
+
 let configCache: unknown = null;
 let cacheExpiry: Temporal.Instant | null = null;
 
@@ -139,15 +143,10 @@ export async function setAwsParamsStatePath(
   subPathKey: string,
   value: string | undefined,
 ) {
-  if (!SCREAMING_SNAKE_CASE.test(subPathKey)) {
-    console.warn(
-      `Ignoring STATE sub-path parameter "${subPathKey}": does not match SCREAMING_SNAKE_CASE convention`,
-    );
-    return false;
-  }
+  const key = StateParamSchema.parse(subPathKey);
   const res = await ssmClient.send(
     new PutParameterCommand({
-      Name: `${PARAMS_NAME}/STATE/${subPathKey}`,
+      Name: `${PARAMS_NAME}/${key}`,
       Value: value,
       Type: "SecureString",
       Overwrite: true,
