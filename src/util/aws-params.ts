@@ -22,16 +22,19 @@ const StateParamSchema = z.string()
 let configCache: unknown = null;
 let cacheExpiry: Temporal.Instant | null = null;
 
-export const TemporalInstantSchema = z.string()
-  .refine((val) => {
-    try {
-      Temporal.Instant.from(val);
-      return true;
-    } catch {
-      return false;
-    }
-  }, { message: "Invalid Temporal Instant string" })
-  .transform((val) => Temporal.Instant.from(val));
+export const TemporalInstantSchema = z.union([
+  z.string()
+    .refine((val) => {
+      try {
+        Temporal.Instant.from(val);
+        return true;
+      } catch {
+        return false;
+      }
+    }, { message: "Invalid Temporal Instant string" })
+    .transform((val) => Temporal.Instant.from(val)),
+  z.instanceof(Temporal.Instant),
+]);
 
 /**
  * NOT for Lambda use -- import getConfig() from app-config.ts instead.
@@ -153,4 +156,14 @@ export async function setAwsParamsStatePath(
     }),
   );
   return Boolean(res.$metadata.httpStatusCode === 200);
+}
+
+export function createConfigLoader<T>(
+  fetcher: () => Promise<T>,
+): () => Promise<T> {
+  let cache: Promise<T> | null = null;
+  return () => {
+    cache ??= fetcher();
+    return cache;
+  };
 }
