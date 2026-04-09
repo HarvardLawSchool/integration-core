@@ -16,7 +16,13 @@
 
 name: CI Integration (Reusable)
 
-on: workflow_call
+on:
+  workflow_call:
+
+# if two CI's are running based on action (e.g., pull_request & push), second cancels first because we only need one
+concurrency:
+  group: ci-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   ci:
