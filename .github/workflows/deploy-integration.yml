@@ -137,5 +137,4 @@ jobs:
             --region "${{ steps.config.outputs.aws_region }}" \
             --capabilities CAPABILITY_NAMED_IAM \
             --no-confirm-changeset \
-            --no-resolve-s3 \
             --parameter-overrides "${PARAM_OVERRIDES[@]}"
