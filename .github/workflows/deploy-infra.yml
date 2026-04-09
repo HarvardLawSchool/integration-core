@@ -85,7 +85,7 @@ jobs:
       - name: SAM deploy infra stack
         run: |
           sam deploy \
-            --template-file app-infra-template.yml \
+            --template-file ./app-infra-template.yml \
             --stack-name "${{ steps.config.outputs.app_stack_name }}-infra-${{ inputs.environment }}" \
             --capabilities CAPABILITY_NAMED_IAM \
             --no-confirm-changeset \
