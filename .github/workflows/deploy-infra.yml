@@ -81,7 +81,6 @@ jobs:
       - uses: aws-actions/setup-sam@v2
         with:
           use-installer: true
-          version: "1.97.0" # Pinned to avoid artifact_callback/NoneType bug
 
       - name: SAM deploy infra stack
         run: |
@@ -91,7 +90,6 @@ jobs:
             --capabilities CAPABILITY_NAMED_IAM \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
-            --no-resolve-s3 \
             --s3-bucket ${{ steps.config.outputs.s3_bucket }} \
             --region ${{ steps.config.outputs.aws_region }} \
             --parameter-overrides \
