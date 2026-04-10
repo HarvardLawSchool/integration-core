@@ -38,6 +38,16 @@ jobs:
       - name: Audit # fail fast: reads lockfile, can catch problems before an install
         run: deno audit --socket --level=critical
 
+      - name: Check config
+        run: |
+          deno eval --no-lock "
+            const { parse } = await import('jsr:@std/jsonc@1');
+            const file = await Deno.readTextFile('deno.json').catch(() => Deno.readTextFile('deno.jsonc'));
+            const { fmt = {} } = parse(file);
+            const overrides = Object.keys(fmt).filter(k => !['include', 'exclude'].includes(k));
+            if (overrides.length > 0) { console.error('Forbidden fmt overrides:', overrides.join(', ')); Deno.exit(1); }
+          "
+
       - name: Format
         run: deno fmt --check
 
