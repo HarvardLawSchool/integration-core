@@ -73,7 +73,7 @@ jobs:
           echo "aws_role_arn=$AWS_ROLE_ARN"           >> "$GITHUB_OUTPUT"
           echo "s3_bucket=$SAM_DEPLOYMENT_BUCKET"     >> "$GITHUB_OUTPUT"
 
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ steps.config.outputs.aws_role_arn }}
           aws-region: ${{ steps.config.outputs.aws_region }}
