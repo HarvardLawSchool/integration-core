@@ -46,8 +46,8 @@ jobs:
           gitleaks detect \
             --source . \
             --verbose \
-            --no-git \  # scans files as they exist now, ignores history
-            --redact  # prevents secrets from being printed in logs
+            --no-git \
+            --redact
 
   ci:
     name: CI
