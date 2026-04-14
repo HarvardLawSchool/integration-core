@@ -25,9 +25,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  gitleaks:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    env:
+      GITLEAKS_VERSION: "8.30.1" # update deliberately — check https://github.com/gitleaks/gitleaks/releases
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Gitleaks
+        run: |
+          curl -sSfL \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz
+          sudo mv gitleaks /usr/local/bin/
+          gitleaks version
+
+      - name: Run Gitleaks
+        run: |
+          gitleaks detect \
+            --source . \
+            --verbose \
+            --no-git \  # scans files as they exist now, ignores history
+            --redact  # prevents secrets from being printed in logs
+
   ci:
     name: CI
     runs-on: ubuntu-latest
+    needs: gitleaks # block all CI steps if secrets are found
     steps:
       - uses: actions/checkout@v5
 
