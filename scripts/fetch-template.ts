@@ -1,5 +1,5 @@
 // Fetches shared base CloudFormation template from integration-core.
-// Version is read from the "extends" URL in deno.jsonc — single source of truth.
+// Version is read from the @hls/integration-core import map entry in deno.jsonc — single source of truth.
 
 const SHARED_ORG = "HarvardLawSchool";
 const SHARED_REPO = "integration-core";
@@ -8,13 +8,13 @@ async function resolveRef(): Promise<string> {
   try {
     const content = await Deno.readTextFile("deno.jsonc")
       .catch(() => Deno.readTextFile("deno.json"));
-    const match = content.match(/integration-core\/([^/]+)\/deno\.base\.jsonc/);
+    const match = content.match(/integration-core\/([^/]+)\/src\/mod\.ts/);
     if (match) return match[1];
   } catch {
     // file not found or unreadable
   }
   console.warn(
-    "Could not parse ref from deno.jsonc extends — falling back to main",
+    "Could not parse ref from deno.jsonc imports — falling back to main",
   );
   return "main";
 }
