@@ -1,6 +1,6 @@
-import { addLogContext, useCustomConsoleLogger } from "./util/logger.ts";
 import type { LambdaHandler } from "./lambda-types.ts";
 import { DefaultErrorResponse } from "./util/lambda.ts";
+import { addLogContext, useCustomConsoleLogger } from "./util/logger.ts";
 
 export interface HandlerOptions {
   webhook?: LambdaHandler;

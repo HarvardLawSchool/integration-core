@@ -1,8 +1,8 @@
 export { createLambdaHandler } from "./handler.ts";
 export { parseBoolEnv } from "./util/env.ts";
-export { timeDifference } from "./util/time-difference.ts";
 export { generateHMAC, verifyHMAC } from "./util/hmac.ts";
-export { DefaultErrorResponse, processEvents } from "./util/lambda.ts";
+export { processEvents } from "./util/lambda.ts";
+export { timeDifference } from "./util/time-difference.ts";
 
 export {
   createConfigLoader,
@@ -33,3 +33,7 @@ export type {
   LambdaHandler,
   ScheduledJobResponse,
 } from "./lambda-types.ts";
+
+// Dev tooling — task script utilities
+import { getStack, root } from "../scripts/_utils.ts";
+export const TaskUtils = { getStack, root };

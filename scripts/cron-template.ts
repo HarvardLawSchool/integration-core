@@ -4,11 +4,10 @@
 import { getStack, root } from "./_utils.ts";
 
 const stack = await getStack();
-const template = await Deno.readTextFile(root("events/cron-template.json"));
 
 await Deno.writeTextFile(
   root(".tmp/cron-event.json"),
-  template.replaceAll("{{STACK_NAME}}", stack),
+  JSON.stringify({ source: "eventbridge.schedule", service: stack }, null, 2),
 );
 
 console.log("Written: .tmp/cron-event.json");
