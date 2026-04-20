@@ -36,4 +36,5 @@ export type {
 
 // Dev tooling — task script utilities
 import { getStack, root } from "../scripts/_utils.ts";
-export const TaskUtils = { getStack, root };
+import { getParams } from "../scripts/params.ts";
+export const TaskUtils = { getStack, getParams, root };
