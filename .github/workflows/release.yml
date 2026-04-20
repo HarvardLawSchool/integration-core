@@ -1,0 +1,51 @@
+# integration-core/.github/workflows/release.yml
+#
+# Triggered when a version tag is pushed (e.g. v0.3.4).
+# Stamps the new version into deno.base.jsonc so the self-referential
+# import map entries always match the tag consumers are pinning to,
+# then force-updates the tag to point at the stamped commit.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # Required for git push and creating GitHub Release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Stamp version into deno.base.jsonc
+        run: |
+          # Tag name injected by GitHub Actions, e.g. v0.3.4
+          VERSION="${GITHUB_REF_NAME}"
+          sed -i "s|integration-core/v[^/]*/src/mod.ts|integration-core/${VERSION}/src/mod.ts|g" deno.base.jsonc
+          sed -i "s|integration-core/v[^/]*/\"|integration-core/${VERSION}/\"|g" deno.base.jsonc
+
+      - name: Verify stamp
+        run: |
+          # Confirm exactly 2 occurrences of the new version were written
+          grep -c "${GITHUB_REF_NAME}" deno.base.jsonc | grep -q "^2$"
+
+      - name: Commit stamped file
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add deno.base.jsonc
+          git commit -m "chore: stamp ${GITHUB_REF_NAME} into deno.base.jsonc [skip ci]"
+          # Force-move the tag to the new stamped commit so consumers
+          # pinning this tag get the correct import map entries
+          git tag -f "${GITHUB_REF_NAME}"
+          git push --force origin "${GITHUB_REF_NAME}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true

@@ -104,6 +104,13 @@ jobs:
         with:
           use-installer: true
 
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: "v2.7.x"
+
+      - name: Fetch shared base template
+        run: deno task dep:fetch-template
+
       - name: SAM build
         run: sam build --use-container --no-cached
 
@@ -137,4 +144,5 @@ jobs:
             --region "${{ steps.config.outputs.aws_region }}" \
             --capabilities CAPABILITY_NAMED_IAM \
             --no-confirm-changeset \
+            --no-resolve-s3 \
             --parameter-overrides "${PARAM_OVERRIDES[@]}"
