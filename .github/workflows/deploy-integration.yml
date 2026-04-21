@@ -104,6 +104,13 @@ jobs:
         with:
           use-installer: true
 
+      - name: Fetch shared base template
+        run: |
+          curl -fsSL \
+            "https://raw.githubusercontent.com/HarvardLawSchool/integration-core/shared-template-tasks-scripts/template.yml" \
+            -o template.yml
+          echo "Fetched template.yml ($(wc -l < template.yml) lines)"
+
       - name: SAM build
         run: sam build --use-container --no-cached
 
@@ -137,4 +144,5 @@ jobs:
             --region "${{ steps.config.outputs.aws_region }}" \
             --capabilities CAPABILITY_NAMED_IAM \
             --no-confirm-changeset \
+            --no-resolve-s3 \
             --parameter-overrides "${PARAM_OVERRIDES[@]}"

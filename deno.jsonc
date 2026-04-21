@@ -2,25 +2,26 @@
   "license": "MIT",
   "tasks": {
     "check": "deno fmt && deno lint && deno check && deno test --permit-no-files",
-    "clean": "rm -rf .aws-sam build",
     "audit": "deno audit --socket --level=critical"
   },
-  "lock": {
-    "frozen": true
-  },
-  "minimumDependencyAge": "P5D", // security threshold in days that new dependency versions may be included
-  // essentially "dev-dependencies" - range preferred here, '--save-exact' from importing project to pin to at least these versions
+  "exclude": [".tmp"],
+  "lock": { "frozen": true },
+  "minimumDependencyAge": "P7D",
+
   "imports": {
-    "@aws-sdk/client-ssm": "npm:@aws-sdk/client-ssm@^3.1001.0",
-    "@std/crypto": "jsr:@std/crypto@^1.0.5",
+    // Self-referential — resolves @hls/integration-core imports in scripts/ locally.
+    // Consumer projects use the stamped remote URLs from deno.base.jsonc instead.
+    "@hls/integration-core": "./src/mod.ts",
+    "@hls/integration-core/": "./",
+    // NOTE: keep in sync with deno.base.jsonc
+    "@aws-sdk/client-ssm": "npm:@aws-sdk/client-ssm@^3.1033.0",
+    "@std/crypto": "jsr:@std/crypto@^1.1.0",
+    "@std/path": "jsr:@std/path@^1.1.4",
     "loglevel": "npm:loglevel@^1.9.2",
     "zod": "npm:zod@^4.3.6"
   },
-  "exclude": [".tmp"],
   "vscode": {
-    "extensions": [
-      "denoland.vscode-deno"
-    ],
+    "extensions": ["denoland.vscode-deno"],
     "settings": {
       "deno.enable": true,
       "deno.suggest.autoImports": true
