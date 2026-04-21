@@ -104,12 +104,16 @@ jobs:
         with:
           use-installer: true
 
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: "v2.7.x"
-
       - name: Fetch shared base template
-        run: deno task dep:fetch-template
+        run: |
+          REF="${GITHUB_WORKFLOW_REF##*@}"
+          REF="${REF#refs/heads/}"
+          REF="${REF#refs/tags/}"
+          echo "Fetching template.yml @ ${REF}"
+          curl -fsSL \
+            "https://raw.githubusercontent.com/HarvardLawSchool/integration-core/${REF}/template.yml" \
+            -o template.yml
+          echo "Fetched template.yml ($(wc -l < template.yml) lines)"
 
       - name: SAM build
         run: sam build --use-container --no-cached

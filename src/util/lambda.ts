@@ -1,7 +1,6 @@
 // Lambda Runtime implementation
 import {
   ApiEvent,
-  ApiResult,
   LambdaContext,
   LambdaEventSource,
   LambdaHandler,
@@ -9,11 +8,6 @@ import {
 
 export const AWS_LAMBDA_RUNTIME_API = Deno.env.get("AWS_LAMBDA_RUNTIME_API");
 export const RUNTIME_PATH = `/2018-06-01/runtime`;
-
-export const DefaultErrorResponse: ApiResult = {
-  statusCode: 500,
-  body: JSON.stringify({ message: "Internal Server Error" }),
-};
 
 export async function processEvents(handler: LambdaHandler): Promise<void> {
   if (!AWS_LAMBDA_RUNTIME_API) {
