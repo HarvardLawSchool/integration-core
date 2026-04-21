@@ -106,12 +106,8 @@ jobs:
 
       - name: Fetch shared base template
         run: |
-          REF="${GITHUB_WORKFLOW_REF##*@}"
-          REF="${REF#refs/heads/}"
-          REF="${REF#refs/tags/}"
-          echo "Fetching template.yml @ ${REF}"
           curl -fsSL \
-            "https://raw.githubusercontent.com/HarvardLawSchool/integration-core/${REF}/template.yml" \
+            "https://raw.githubusercontent.com/HarvardLawSchool/integration-core/shared-template-tasks-scripts/template.yml" \
             -o template.yml
           echo "Fetched template.yml ($(wc -l < template.yml) lines)"
 
