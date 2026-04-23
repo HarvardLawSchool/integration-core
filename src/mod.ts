@@ -34,7 +34,4 @@ export type {
   ScheduledJobResponse,
 } from "./lambda-types.ts";
 
-// Dev tooling — task script utilities
-import { getStack, root } from "../scripts/_utils.ts";
-import { getParams } from "../scripts/params.ts";
-export const TaskUtils = { getStack, getParams, root };
+export { getStack, root as projectRoot } from "../scripts/_utils.ts";

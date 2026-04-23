@@ -1,4 +1,9 @@
-import { generateHMAC, getParam, TaskUtils } from "@hls/integration-core";
+import {
+  generateHMAC,
+  getParam,
+  getStack,
+  projectRoot,
+} from "@hls/integration-core";
 
 const dataId = Deno.env.get("DATA_ID");
 const eventType = Deno.env.get("EVENT_TYPE");
@@ -10,7 +15,7 @@ const body = Deno.env.get("WEBHOOK_BODY") ?? JSON.stringify({
   timestamp: new Date().toISOString(),
 });
 
-const paramsName = `/integrations/${await TaskUtils.getStack()}`;
+const paramsName = `/integrations/${await getStack()}`;
 const blob = JSON.parse(await getParam(paramsName));
 const webhookSecret = blob.WEBHOOK_SECRET;
 if (!webhookSecret) throw new Error("WEBHOOK_SECRET not found in config blob");
@@ -42,7 +47,7 @@ const event = {
 };
 
 await Deno.writeTextFile(
-  TaskUtils.root(".tmp/webhook-event.json"),
+  projectRoot(".tmp/webhook-event.json"),
   JSON.stringify(event, null, 2),
 );
 

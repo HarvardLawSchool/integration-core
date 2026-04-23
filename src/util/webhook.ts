@@ -26,7 +26,7 @@ export async function validateWebhookSignature(
 
 export const WebhookEventSchema = z.object({
   type: z.string().optional(),
-  typestamp: z.iso.datetime().optional(),
+  timestamp: z.iso.datetime(),
   data: z.unknown().optional(),
 });
 export type WebhookEvent = z.infer<typeof WebhookEventSchema>;
