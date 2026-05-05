@@ -107,7 +107,7 @@ jobs:
       - name: Fetch shared base template
         run: |
           curl -fsSL \
-            "https://raw.githubusercontent.com/HarvardLawSchool/integration-core/main/template.yml" \
+            "https://raw.githubusercontent.com/HarvardLawSchool/integration-core/scheduled-runs-timezone/template.yml" \
             -o template.yml
           echo "Fetched template.yml ($(wc -l < template.yml) lines)"
 
