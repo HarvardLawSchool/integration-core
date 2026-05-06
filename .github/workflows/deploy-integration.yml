@@ -89,6 +89,8 @@ jobs:
           echo "s3_bucket=$SAM_DEPLOYMENT_BUCKET"                 >> "$GITHUB_OUTPUT"
           echo "trigger_type=$TRIGGER_TYPE"                       >> "$GITHUB_OUTPUT"
           echo "schedule=$SCHEDULE"                               >> "$GITHUB_OUTPUT"
+          # optional — defaults to America/New_York in SAM deploy step
+          echo "schedule_timezone=$SCHEDULE_TIMEZONE"             >> "$GITHUB_OUTPUT"
           echo "schedule_alarm_window=$SCHEDULE_ALARM_WINDOW"     >> "$GITHUB_OUTPUT"
           echo "schedule_eval_periods=$SCHEDULE_EVAL_PERIODS"     >> "$GITHUB_OUTPUT"
           echo "log_level=$LOG_LEVEL"                             >> "$GITHUB_OUTPUT"
@@ -119,6 +121,7 @@ jobs:
           TRIGGER_TYPE: ${{ steps.config.outputs.trigger_type }}
           ALERT_EMAIL_OVERRIDE: ${{ steps.config.outputs.alert_email_override }}
           SCHEDULE: ${{ steps.config.outputs.schedule }}
+          SCHEDULE_TIMEZONE: ${{ steps.config.outputs.schedule_timezone }}
           SCHEDULE_ALARM_WINDOW: ${{ steps.config.outputs.schedule_alarm_window }}
           SCHEDULE_EVAL_PERIODS: ${{ steps.config.outputs.schedule_eval_periods }}
           LOG_LEVEL: ${{ steps.config.outputs.log_level }}
@@ -132,6 +135,8 @@ jobs:
 
           if [ "${TRIGGER_TYPE}" != "webhook" ]; then
             [ -n "$SCHEDULE" ]              && PARAM_OVERRIDES+=("ScheduleExpression='$SCHEDULE'")
+            # Always passed — defaults to America/New_York if not set in integration config
+            PARAM_OVERRIDES+=("ScheduleTimezone=${SCHEDULE_TIMEZONE:-America/New_York}")
             [ -n "$SCHEDULE_EVAL_PERIODS" ] && PARAM_OVERRIDES+=("ScheduleEvaluationPeriods=$SCHEDULE_EVAL_PERIODS")
             [ -n "$SCHEDULE_ALARM_WINDOW" ] && PARAM_OVERRIDES+=("ScheduleAlarmWindow=$SCHEDULE_ALARM_WINDOW")
           fi

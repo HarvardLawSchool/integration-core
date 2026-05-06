@@ -52,14 +52,21 @@ Parameters:
 
   ScheduleExpression:
     Type: String
-    # NOTE: All EventBridge cron times are UTC
-    Default: "cron(0 5 * * ? *)" # midnight daily EST
+    Default: "cron(0 0 * * ? *)" # midnight daily EST
     Description: >
       EventBridge schedule expression for the Lambda trigger.
       Examples:
         rate(1 hour)
-        cron(0 8-20 * * ? *)   — hourly 08:00–20:00 UTC
-        cron(15 1/6 * * ? *)   — every 6 hrs starting 01:15 UTC
+        cron(0 8-20 * * ? *)   — hourly 08:00–20:00
+        cron(15 1/6 * * ? *)   — every 6 hrs starting 01:15
+
+  ScheduleTimezone:
+    Type: String
+    Default: "America/New_York"
+    Description: >
+      IANA timezone for ScheduleExpression.
+      EventBridge Scheduler handles DST automatically.
+      Examples: America/New_York, America/Chicago, UTC
 
   ScheduleEvaluationPeriods:
     Type: Number
@@ -185,30 +192,44 @@ Resources:
         - Protocol: email
           Endpoint: !Ref AlertEmailOverride
 
+  SchedulerRole:
+    Type: AWS::IAM::Role
+    Condition: CreateSchedule
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: InvokeLambda
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !GetAtt Lambda.Arn
+
   ScheduleRule:
-    Type: AWS::Events::Rule
+    Type: AWS::Scheduler::Schedule
     Condition: CreateSchedule
     Properties:
       Description: !Sub "Scheduled trigger for ${AWS::StackName}"
       ScheduleExpression: !Ref ScheduleExpression
+      ScheduleExpressionTimezone: !Ref ScheduleTimezone
       State: !Ref ScheduleEnabled
-      Targets:
-        - Arn: !GetAtt Lambda.Arn
-          Id: ScheduleTarget
-          Input: !Sub |
-            {
-              "source": "eventbridge.schedule",
-              "service": "${AWS::StackName}"
-            }
-
-  SchedulePermission:
-    Type: AWS::Lambda::Permission
-    Condition: CreateSchedule
-    Properties:
-      FunctionName: !Ref Lambda
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn: !GetAtt ScheduleRule.Arn
+      FlexibleTimeWindow:
+        Mode: "OFF"
+      Target:
+        Arn: !GetAtt Lambda.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        Input: !Sub |
+          {
+            "source": "eventbridge.schedule",
+            "service": "${AWS::StackName}"
+          }
 
   # Explicit log group ensures MetricFilter deploys successfully on first deploy
   # (Lambda only auto-creates it on first invocation)
@@ -306,16 +327,16 @@ Resources:
     Condition: MonitorSchedule
     Properties:
       AlarmDescription: !Sub "Scheduled rule did not fire in ${AWS::StackName}"
-      # AWS/Events TriggeredRules is used rather than AWS/Lambda Invocations because:
+      # AWS/Scheduler InvocationAttemptCount is used rather than AWS/Lambda Invocations because:
       # - It is schedule-specific and won't be masked by webhook invocations
       #   when TriggerType is "both"
-      # - It signals at the EventBridge level, upstream of Lambda execution
+      # - It signals at the Scheduler level, upstream of Lambda execution
       # Complements ErrorAlarm: that catches Lambda ran but failed;
       # this catches Lambda never ran at all
-      MetricName: TriggeredRules
-      Namespace: AWS/Events
+      MetricName: InvocationAttemptCount
+      Namespace: AWS/Scheduler
       Dimensions:
-        - Name: RuleName
+        - Name: ScheduleName
           Value: !Ref ScheduleRule
       Statistic: Sum
       Period: !FindInMap [
@@ -327,7 +348,7 @@ Resources:
       Threshold: 1
       ComparisonOperator: LessThanThreshold
       # TreatMissingData: breaching is what makes this work —
-      # EventBridge only emits TriggeredRules when the rule actually fires,
+      # Scheduler only emits InvocationAttemptCount when the schedule actually fires,
       # so an empty period means no trigger occurred
       TreatMissingData: breaching
       AlarmActions:
