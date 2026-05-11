@@ -3,11 +3,16 @@
  */
 import { getStack, root } from "./_utils.ts";
 
-const stack = await getStack();
+export async function writeCronTemplate(): Promise<void> {
+  const stack = await getStack();
+  await Deno.writeTextFile(
+    root(".tmp/cron-event.json"),
+    JSON.stringify({ source: "eventbridge.schedule", service: stack }, null, 2),
+  );
+  console.log("Written: .tmp/cron-event.json");
+}
 
-await Deno.writeTextFile(
-  root(".tmp/cron-event.json"),
-  JSON.stringify({ source: "eventbridge.schedule", service: stack }, null, 2),
-);
-
-console.log("Written: .tmp/cron-event.json");
+// no side-effects on import
+if (import.meta.main) {
+  await writeCronTemplate();
+}
