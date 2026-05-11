@@ -12,6 +12,7 @@ export async function writeCronTemplate(): Promise<void> {
   console.log("Written: .tmp/cron-event.json");
 }
 
+// no side-effects on import
 if (import.meta.main) {
   await writeCronTemplate();
 }
