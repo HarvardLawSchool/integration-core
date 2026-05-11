@@ -35,3 +35,10 @@ export type {
 } from "./lambda-types.ts";
 
 export { getStack, root as projectRoot } from "../scripts/_utils.ts";
+
+// Task script re-exports, ensures deno.lock coverage via static analysis on `deno install`.
+export { writeCronTemplate } from "../scripts/cron-template.ts";
+export { writeEnvFile } from "../scripts/env.ts";
+export { fetchTemplate } from "../scripts/fetch-template.ts";
+export { getParams } from "../scripts/params.ts";
+export { writeWebhookTemplate } from "../scripts/webhook-template.ts";

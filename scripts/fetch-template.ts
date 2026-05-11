@@ -1,6 +1,5 @@
 // Fetches shared base CloudFormation template from integration-core.
 // Version is read from the @hls/integration-core import map entry in deno.jsonc — single source of truth.
-
 const SHARED_ORG = "HarvardLawSchool";
 const SHARED_REPO = "integration-core";
 
@@ -19,25 +18,30 @@ async function resolveRef(): Promise<string> {
   return "main";
 }
 
-const force = Deno.args.includes("--force");
-
-try {
-  const { isFile } = await Deno.stat("template.yml");
-  if (isFile && !force) {
-    console.log("template.yml exists — skipping (pass --force to re-fetch)");
-    Deno.exit(0);
+export async function fetchTemplate(force = false): Promise<void> {
+  try {
+    const { isFile } = await Deno.stat("template.yml");
+    if (isFile && !force) {
+      console.log("template.yml exists — skipping (pass --force to re-fetch)");
+      return;
+    }
+  } catch {
+    // doesn't exist, continue
   }
-} catch {
-  // doesn't exist, continue
+
+  const ref = await resolveRef();
+  const url =
+    `https://raw.githubusercontent.com/${SHARED_ORG}/${SHARED_REPO}/${ref}/template.yml`;
+
+  console.log(`Fetching shared template @ ${ref}`);
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText} — ${url}`);
+
+  await Deno.writeTextFile("template.yml", await res.text());
+  console.log("Wrote template.yml");
 }
 
-const ref = await resolveRef();
-const url =
-  `https://raw.githubusercontent.com/${SHARED_ORG}/${SHARED_REPO}/${ref}/template.yml`;
-
-console.log(`Fetching shared template @ ${ref}`);
-const res = await fetch(url);
-if (!res.ok) throw new Error(`${res.status} ${res.statusText} — ${url}`);
-
-await Deno.writeTextFile("template.yml", await res.text());
-console.log("Wrote template.yml");
+// no side-effects on import
+if (import.meta.main) {
+  await fetchTemplate(Deno.args.includes("--force"));
+}
