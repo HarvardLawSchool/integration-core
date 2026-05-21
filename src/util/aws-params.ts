@@ -26,20 +26,6 @@ const StateParamSchema = z.string()
 let configCache: unknown = null;
 let cacheExpiry: Temporal.Instant | null = null;
 
-export const TemporalInstantSchema = z.union([
-  z.string()
-    .refine((val) => {
-      try {
-        Temporal.Instant.from(val);
-        return true;
-      } catch {
-        return false;
-      }
-    }, { message: "Invalid Temporal Instant string" })
-    .transform((val) => Temporal.Instant.from(val)),
-  z.instanceof(Temporal.Instant),
-]);
-
 /**
  * NOT for Lambda use -- import getConfig() from app-config.ts instead.
  * Use this only for one-off lookups (e.g. deno-task-utils scripts).

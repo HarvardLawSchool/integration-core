@@ -1,4 +1,5 @@
 export { createLambdaHandler } from "./handler.ts";
+export { TemporalInstantSchema } from "./schema.ts";
 export { parseBoolEnv } from "./util/env.ts";
 export { generateHMAC, verifyHMAC } from "./util/hmac.ts";
 export { processEvents } from "./util/lambda.ts";
@@ -9,7 +10,6 @@ export {
   getAwsParams,
   getParam,
   setAwsParamsStatePath,
-  TemporalInstantSchema,
 } from "./util/aws-params.ts";
 
 export {
