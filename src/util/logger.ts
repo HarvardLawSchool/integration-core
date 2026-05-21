@@ -25,7 +25,16 @@ log.methodFactory = (methodName, _logLevel, _loggerName) => {
 };
 
 // Now setLevel — triggers replaceLoggingMethods() with the custom factory above
-switch (Deno.env.get("LOG_LEVEL")?.toLowerCase()) {
+
+// Gracefully fall back to "info" if env access is not permitted
+let logLevel: string | undefined;
+try {
+  logLevel = Deno.env.get("LOG_LEVEL")?.toLowerCase();
+} catch {
+  // no env permission — default to info
+}
+
+switch (logLevel) {
   case "trace":
     log.setLevel("trace");
     break;
