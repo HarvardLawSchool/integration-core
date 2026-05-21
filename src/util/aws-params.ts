@@ -1,4 +1,3 @@
-import { z, type ZodAny, type ZodType } from "zod";
 import {
   GetParameterCommand,
   GetParametersByPathCommand,
@@ -6,8 +5,13 @@ import {
   PutParameterCommand,
   SSMClient,
 } from "@aws-sdk/client-ssm";
+import { z, type ZodAny, type ZodType } from "zod";
 
-const PARAMS_NAME = Deno.env.get("PARAMS_NAME");
+let PARAMS_NAME: string | undefined;
+try {
+  PARAMS_NAME = Deno.env.get("PARAMS_NAME");
+} catch { /* no env permission */ }
+
 const SCREAMING_SNAKE_CASE = /^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$/;
 
 const CACHE_TTL_MS = 5 * 60_000; // 5min cache

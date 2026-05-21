@@ -6,7 +6,12 @@ import {
   LambdaHandler,
 } from "../lambda-types.ts";
 
-export const AWS_LAMBDA_RUNTIME_API = Deno.env.get("AWS_LAMBDA_RUNTIME_API");
+let AWS_LAMBDA_RUNTIME_API: string | undefined;
+try {
+  AWS_LAMBDA_RUNTIME_API = Deno.env.get("AWS_LAMBDA_RUNTIME_API");
+} catch { /* no env permission */ }
+export { AWS_LAMBDA_RUNTIME_API };
+
 export const RUNTIME_PATH = `/2018-06-01/runtime`;
 
 export async function processEvents(handler: LambdaHandler): Promise<void> {
