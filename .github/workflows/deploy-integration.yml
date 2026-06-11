@@ -14,13 +14,11 @@
 #
 # Non-breaking changes (new optional inputs with defaults, added steps) are safe.
 #
-### Approval Gate
-# Production deployments require manual approval from the DevOps team.
-#
-# One-time setup (integration-core repo):
-#   Repo / Settings / Environments / prod
-#     - Required reviewers: org/devops and/or individuals
-#     - Deployment branches: release/prod only
+### Deployment Model
+# - dev:  triggered automatically on push to release/dev (in calling workflow)
+# - prod: triggered manually only via workflow_dispatch (in calling workflow)
+#         release/prod is never configured as a push trigger — there is no
+#         automatic path to a production deployment.
 
 name: Deploy Integration (Reusable)
 
@@ -32,33 +30,7 @@ on:
         type: string
 
 jobs:
-  ### Approval Gate
-  #
-  # Skipped entirely for non-production environments (dev flows through).
-  # For production: pauses here and notifies required reviewers.
-  # The deploy job will not start until this job completes successfully.
-  await-approval:
-    if: inputs.environment == 'prod'
-    runs-on: ubuntu-latest
-    environment: prod
-    steps:
-      - name: Approval checkpoint
-        run: |
-          echo "✅ Production deployment approved"
-          echo "Approved by: ${{ github.actor }}"
-          echo "Ref:         ${{ github.ref }}"
-          echo "Environment: ${{ inputs.environment }}"
-
-  ### Deploy
-  # Runs immediately for dev (await-approval skipped).
-  # Runs after approval for production.
   deploy:
-    needs: await-approval
-    if: |
-      always() && (
-        needs.await-approval.result == 'success' ||
-        needs.await-approval.result == 'skipped'
-      )
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
 
@@ -83,18 +55,17 @@ jobs:
         id: config
         run: |
           source .github/integration.config.${{ inputs.environment }}
-          echo "stack_name=$STACK_NAME"                           >> "$GITHUB_OUTPUT"
-          echo "aws_region=$AWS_REGION"                           >> "$GITHUB_OUTPUT"
-          echo "aws_role_arn=$AWS_ROLE_ARN"                       >> "$GITHUB_OUTPUT"
-          echo "s3_bucket=$SAM_DEPLOYMENT_BUCKET"                 >> "$GITHUB_OUTPUT"
-          echo "trigger_type=$TRIGGER_TYPE"                       >> "$GITHUB_OUTPUT"
-          echo "schedule=$SCHEDULE"                               >> "$GITHUB_OUTPUT"
-          # optional — defaults to America/New_York in SAM deploy step
-          echo "schedule_timezone=$SCHEDULE_TIMEZONE"             >> "$GITHUB_OUTPUT"
-          echo "schedule_alarm_window=$SCHEDULE_ALARM_WINDOW"     >> "$GITHUB_OUTPUT"
-          echo "schedule_eval_periods=$SCHEDULE_EVAL_PERIODS"     >> "$GITHUB_OUTPUT"
-          echo "log_level=$LOG_LEVEL"                             >> "$GITHUB_OUTPUT"
-          echo "alert_email_override=$ALERT_EMAIL_OVERRIDE"       >> "$GITHUB_OUTPUT"
+          echo "stack_name=$STACK_NAME"                         >> "$GITHUB_OUTPUT"
+          echo "aws_region=$AWS_REGION"                         >> "$GITHUB_OUTPUT"
+          echo "aws_role_arn=$AWS_ROLE_ARN"                     >> "$GITHUB_OUTPUT"
+          echo "s3_bucket=$SAM_DEPLOYMENT_BUCKET"               >> "$GITHUB_OUTPUT"
+          echo "trigger_type=$TRIGGER_TYPE"                     >> "$GITHUB_OUTPUT"
+          echo "schedule=$SCHEDULE"                             >> "$GITHUB_OUTPUT"
+          echo "schedule_timezone=$SCHEDULE_TIMEZONE"           >> "$GITHUB_OUTPUT"
+          echo "schedule_alarm_window=$SCHEDULE_ALARM_WINDOW"   >> "$GITHUB_OUTPUT"
+          echo "schedule_eval_periods=$SCHEDULE_EVAL_PERIODS"   >> "$GITHUB_OUTPUT"
+          echo "log_level=$LOG_LEVEL"                           >> "$GITHUB_OUTPUT"
+          echo "alert_email_override=$ALERT_EMAIL_OVERRIDE"     >> "$GITHUB_OUTPUT"
 
       - uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -144,9 +115,9 @@ jobs:
           printf '%s\n' "${PARAM_OVERRIDES[@]}"
 
           sam deploy \
-            --stack-name "${{ steps.config.outputs.stack_name }}" \
-            --s3-bucket "${{ steps.config.outputs.s3_bucket }}" \
-            --region "${{ steps.config.outputs.aws_region }}" \
+            --stack-name   "${{ steps.config.outputs.stack_name }}" \
+            --s3-bucket    "${{ steps.config.outputs.s3_bucket }}" \
+            --region       "${{ steps.config.outputs.aws_region }}" \
             --capabilities CAPABILITY_NAMED_IAM \
             --no-confirm-changeset \
             --no-resolve-s3 \
