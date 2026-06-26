@@ -26,25 +26,7 @@ on:
         type: string
 
 jobs:
-  await-approval:
-    if: inputs.environment == 'prod'
-    runs-on: ubuntu-latest
-    environment: prod
-    steps:
-      - name: Approval checkpoint
-        run: |
-          echo "✅ Production infra deployment approved"
-          echo "Approved by: ${{ github.actor }}"
-          echo "Ref:         ${{ github.ref }}"
-          echo "Environment: ${{ inputs.environment }}"
-
   deploy:
-    needs: await-approval
-    if: |
-      always() && (
-        needs.await-approval.result == 'success' ||
-        needs.await-approval.result == 'skipped'
-      )
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
 
