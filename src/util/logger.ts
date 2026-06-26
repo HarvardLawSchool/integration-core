@@ -59,6 +59,7 @@ export default log;
  * to inject Lambda/other info to all console.* methods
  */
 export function useCustomConsoleLogger() {
+  console.trace = log.trace;
   console.debug = log.debug;
   console.info = log.info;
   console.log = log.info;
