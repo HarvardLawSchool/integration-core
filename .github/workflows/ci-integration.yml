@@ -58,7 +58,7 @@ jobs:
 
       - uses: denoland/setup-deno@v2
         with:
-          deno-version: "v2.7.x"
+          deno-version: "v2.9.x"
 
       - name: Audit # fail fast: reads lockfile, can catch problems before an install
         run: deno audit --socket --level=critical
