@@ -172,6 +172,18 @@ Resources:
       Timeout: !Ref LambdaTimeout
       MemorySize: 512
       Role: !GetAtt ExecutionRole.Arn
+      # ----------------------------------------------------------------
+      # Explicitly set ImageConfig to match the Dockerfile so that
+      # AWS lifecycle automation cannot clear it and cause console/deploy
+      # errors. Values mirror the provided:al2023 base image defaults
+      # and the CMD defined at the bottom of the Dockerfile.
+      # ----------------------------------------------------------------
+      ImageConfig:
+        EntryPoint:
+          - "/lambda-entrypoint.sh" # provided:al2023 base image default
+        Command:
+          - "handler" # matches CMD ["handler"] in Dockerfile
+        WorkingDirectory: "/var/task" # matches WORKDIR ${LAMBDA_TASK_ROOT}
       Environment:
         Variables:
           PARAMS_NAME: !Sub "/integrations/${AWS::StackName}"
@@ -364,6 +376,8 @@ Resources:
   # receives a plain string and doesn't need to re-declare the condition
   AppStack:
     Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
     Properties:
       TemplateURL: ./app-template.yml
       Parameters:
