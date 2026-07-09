@@ -14,9 +14,9 @@
     "@hls/integration-core": "./src/mod.ts",
     "@hls/integration-core/": "./",
     // NOTE: keep in sync with deno.base.jsonc
-    "@aws-sdk/client-ssm": "npm:@aws-sdk/client-ssm@^3.1062.0",
+    "@aws-sdk/client-ssm": "npm:@aws-sdk/client-ssm@^3.1078.0",
     "@std/crypto": "jsr:@std/crypto@^1.1.0",
-    "@std/path": "jsr:@std/path@^1.1.5",
+    "@std/path": "jsr:@std/path@^1.1.6",
     "loglevel": "npm:loglevel@^1.9.2",
     "zod": "npm:zod@^4.4.3"
   },
