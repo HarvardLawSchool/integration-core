@@ -82,7 +82,7 @@ jobs:
           "
 
       - name: Format
-        run: deno fmt --check --exclude="**/*.sql"
+        run: deno fmt --check --ignore="**/*.sql"
 
       - name: Lint
         run: deno lint
