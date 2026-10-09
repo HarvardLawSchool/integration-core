@@ -10,10 +10,9 @@
 
   "imports": {
     // Self-referential — resolves @hls/integration-core imports in scripts/ locally.
-    // Consumer projects use the stamped remote URLs from deno.base.jsonc instead.
+    // Consumer projects import via raw GitHub URLs (see integration-template README).
     "@hls/integration-core": "./src/mod.ts",
     "@hls/integration-core/": "./",
-    // NOTE: keep in sync with deno.base.jsonc
     "@aws-sdk/client-ssm": "npm:@aws-sdk/client-ssm@^3.1078.0",
     "@std/crypto": "jsr:@std/crypto@^1.1.0",
     "@std/path": "jsr:@std/path@^1.1.6",
