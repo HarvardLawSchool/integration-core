@@ -9,6 +9,20 @@ export function addLogContext(ctx: LogContext) {
   currentContext = { ...currentContext, ...(ctx ?? {}) };
 }
 
+// handle Error instance details differently -- avoids JSON.stringify eval to "{}"
+function errorReplacer(_key: string, value: unknown) {
+  if (value instanceof Error) {
+    return {
+      ...value,
+      name: value.name,
+      message: value.message,
+      stack: value.stack?.split("\n"),
+      ...(value.cause !== undefined && { cause: value.cause }),
+    };
+  }
+  return value;
+}
+
 // IMPORTANT Set factory BEFORE setLevel
 log.methodFactory = (methodName, _logLevel, _loggerName) => {
   return (...args: unknown[]) => {
@@ -19,7 +33,7 @@ log.methodFactory = (methodName, _logLevel, _loggerName) => {
       level: methodName.toUpperCase(),
       msg,
       ...currentContext,
-    }) + "\n";
+    }, errorReplacer) + "\n";
     process.stdout.write(jsonMessage);
   };
 };
