@@ -1,0 +1,15 @@
+# Keeps the SHA-pinned actions in .github/workflows current. Each PR bumps the
+# SHA and its version comment together; all action bumps arrive as one grouped
+# weekly PR. Cooldown waits 7 days after a release, giving time for a
+# compromised release to be caught before it's proposed.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]
