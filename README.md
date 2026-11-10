@@ -18,10 +18,3 @@ Bump (after commit):
 ```bash
 git tag v0.1.0 && git push origin v0.1.0
 ```
-
-## Shared CI
-
-[`ci-integration.yml`](.github/workflows/ci-integration.yml) is the shared CI
-for integrations, used from `@main`. It also runs on this repo's PRs. Changes
-take effect across integrations on merge; see the header comment there for how
-to test a change first.
