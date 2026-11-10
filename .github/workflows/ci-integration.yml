@@ -1,27 +1,34 @@
-### Reusable CI Workflow
-# Called by integration repos via:
-#   uses: HarvardLawSchool/integration-core/.github/workflows/ci-integration.yml@main
+### Shared CI for integrations
+# Runs two ways:
+#   1. Called from a repo's ci.yml wrapper:
+#        uses: HarvardLawSchool/integration-core/.github/workflows/ci-integration.yml@main
+#   2. Directly on pull requests, when required at the org level (always from @main).
+# PRs to integration-core also run this file (the PR's version) against integration-core.
 #
 # *** BREAKING CHANGE WARNING ***
-# This workflow is referenced at @main by all integration repos.
-# Any breaking change here (changed deno-version, removed or reordered steps)
-# takes effect IMMEDIATELY across every integration on their next CI run.
+# Other repos use this workflow from @main. A breaking change here (changed
+# deno-version, removed or reordered steps) takes effect IMMEDIATELY on their
+# next PR, and can BLOCK MERGES across integrations, not just fail CI.
 #
 # Before merging changes to this file:
-#   1. Test against at least one integration repo manually
+#   1. Test against at least one integration repo: in a draft PR there, add a
+#      throwaway wrapper pointing at this file @<your-branch>
 #   2. Announce changes to integration developers
-#   3. Consider using a feature branch and updating integrations one at a time
 #
 # Non-breaking changes (new optional inputs with defaults, added steps) are safe.
 
-name: CI Integration (Reusable)
+name: AWS Integration CI
 
 on:
-  workflow_call:
+  workflow_call: # from ci.yml wrappers
+  pull_request: # when required directly; also integration-core's own PRs
+  merge_group: # required checks must also report in a merge queue
 
-# if two CI's are running based on action (e.g., pull_request & push), second cancels first because we only need one
+# One run per workflow + ref; a newer run cancels the older one.
+# github.workflow is the caller's name when called from a wrapper, so a wrapper
+# run and a direct run on the same PR don't cancel each other.
 concurrency:
-  group: ci-${{ github.repository }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 # Callers can't widen this; each job grants only what it needs.
