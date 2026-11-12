@@ -100,7 +100,7 @@ jobs:
       - name: Check config
         run: |
           deno eval --no-lock "
-            const { parse } = await import('jsr:@std/jsonc@1');
+            const { parse } = await import('jsr:@std/jsonc@1.0.3');
             const file = await Deno.readTextFile('deno.json').catch(() => Deno.readTextFile('deno.jsonc'));
             const { fmt = {} } = parse(file);
             const overrides = Object.keys(fmt).filter(k => !['include', 'exclude'].includes(k));

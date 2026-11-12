@@ -78,15 +78,11 @@ jobs:
           echo "log_level=$LOG_LEVEL"                           >> "$GITHUB_OUTPUT"
           echo "alert_email_override=$ALERT_EMAIL_OVERRIDE"     >> "$GITHUB_OUTPUT"
 
-      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
-        with:
-          role-to-assume: ${{ steps.config.outputs.aws_role_arn }}
-          aws-region: ${{ steps.config.outputs.aws_region }}
-
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@f84ec7d548307efafe33230528756de3c5841a17 # v2
         with:
           use-installer: true
+          version: "1.171.0" # manual bumps: Dependabot updates the action, not this input
 
       # Same trust root as this workflow, which callers run from @main.
       # If callers ever pin this workflow to a tag/SHA, pin this URL to match.
@@ -99,6 +95,13 @@ jobs:
 
       - name: SAM build
         run: sam build --use-container --no-cached
+
+      # Credentials load only after the build, so the image build (Dockerfile
+      # RUN steps) never has AWS credentials in its environment.
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ steps.config.outputs.aws_role_arn }}
+          aws-region: ${{ steps.config.outputs.aws_region }}
 
       - name: SAM deploy
         env:
