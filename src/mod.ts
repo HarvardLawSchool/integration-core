@@ -20,6 +20,7 @@ export {
 
 export {
   validateWebhookSignature,
+  WEBHOOK_MAX_AGE_MS,
   type WebhookEvent,
   WebhookEventSchema,
   WebhookRequestSchema,

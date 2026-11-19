@@ -1,6 +1,3 @@
-###
-### Parent stack for all integrations
-###
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: "Integration Tooling base infrastructure. See app-template.yml for app-specific resources"
@@ -170,7 +167,7 @@ Resources:
       PackageType: Image
       Architectures: [x86_64]
       Timeout: !Ref LambdaTimeout
-      MemorySize: 512
+      MemorySize: 1024
       Role: !GetAtt ExecutionRole.Arn
       # ----------------------------------------------------------------
       # Explicitly set ImageConfig to match the Dockerfile so that

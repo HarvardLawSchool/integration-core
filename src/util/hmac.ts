@@ -11,13 +11,8 @@ export async function verifyHMAC(
 
     let expectedSignature: string;
     if (header.startsWith("sha256=")) {
-      // GitHub/Standard: "sha256=abc123..."
+      // Prefixed: "sha256=abc123..."
       expectedSignature = header.slice(7);
-    } else if (header.includes("v1=")) {
-      // Stripe: "t=1234567890,v1=abc123..."
-      const match = header.match(/v1=([a-f0-9]+)/i);
-      if (!match) return false;
-      expectedSignature = match[1];
     } else {
       // Raw hex: "abc123..."
       expectedSignature = header;
