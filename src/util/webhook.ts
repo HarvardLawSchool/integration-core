@@ -2,6 +2,13 @@ import { z } from "zod";
 import { ApiEvent } from "../lambda-types.ts";
 import { verifyHMAC } from "./hmac.ts";
 
+/** Max age (either direction, to tolerate clock skew) of a signed event's timestamp */
+export const WEBHOOK_MAX_AGE_MS = 5 * 60 * 1000;
+
+/**
+ * Verifies the HMAC signature, then rejects events whose signed `timestamp`
+ * is outside WEBHOOK_MAX_AGE_MS (limits replay of captured requests).
+ */
 export async function validateWebhookSignature(
   event: ApiEvent,
   webhookSecret: string,
@@ -22,6 +29,13 @@ export async function validateWebhookSignature(
   if (!isValid) {
     throw new Error("Invalid webhook signature");
   }
+
+  // Only trust the body after the signature is verified
+  const { timestamp } = WebhookEventSchema.parse(JSON.parse(event.body));
+  const age = Math.abs(Date.now() - Date.parse(timestamp));
+  if (!(age <= WEBHOOK_MAX_AGE_MS)) { // also rejects NaN
+    throw new Error("Webhook timestamp outside allowed window");
+  }
 }
 
 export const WebhookEventSchema = z.object({
@@ -32,7 +46,7 @@ export const WebhookEventSchema = z.object({
 export type WebhookEvent = z.infer<typeof WebhookEventSchema>;
 
 const SignatureSchema = z.string().regex(
-  /^(sha256=|v1=)?[a-f0-9]{64}$/i,
+  /^(sha256=)?[a-f0-9]{64}$/i,
   "Invalid webhook signature hash",
 );
 export const WebhookRequestSchema = z.object({
