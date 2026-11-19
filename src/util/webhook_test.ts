@@ -84,6 +84,43 @@ Deno.test("rejects validly signed body without timestamp", async () => {
   );
 });
 
+/** Vendor format: local time with offset, no millis, e.g. "2026-11-19T09:51:28-05:00" */
+function offsetTimestamp(offsetMs = 0): string {
+  const local = new Date(Date.now() + offsetMs - 5 * 60 * MINUTE);
+  return local.toISOString().slice(0, 19) + "-05:00";
+}
+
+function vendorBody(offsetMs = 0): string {
+  return JSON.stringify({
+    type: "primary_appointment.updated",
+    timestamp: offsetTimestamp(offsetMs),
+    data: { id: "01a1a852-52cf-7de1-a0da-9c2e4ddfc898" },
+  });
+}
+
+Deno.test("accepts vendor event with offset timestamp", async () => {
+  const body = vendorBody();
+  const sig = await generateHMAC(body, SECRET);
+  await validateWebhookSignature(makeEvent(body, `sha256=${sig}`), SECRET);
+});
+
+Deno.test("rejects stale vendor event with offset timestamp", async () => {
+  const body = vendorBody(-10 * MINUTE);
+  const sig = await generateHMAC(body, SECRET);
+  await rejects(
+    validateWebhookSignature(makeEvent(body, `sha256=${sig}`), SECRET),
+    { message: "Webhook timestamp outside allowed window" },
+  );
+});
+
+Deno.test("WebhookRequestSchema accepts offset timestamp", () => {
+  const parsed = WebhookRequestSchema.safeParse({
+    body: vendorBody(),
+    headers: { "X-Webhook-Signature": `sha256=${"a".repeat(64)}` },
+  });
+  assertEquals(parsed.success, true);
+});
+
 Deno.test("rejects Stripe-style header", async () => {
   const body = makeBody();
   const sig = await generateHMAC(body, SECRET);

@@ -40,7 +40,8 @@ export async function validateWebhookSignature(
 
 export const WebhookEventSchema = z.object({
   type: z.string().optional(),
-  timestamp: z.iso.datetime(),
+  // Vendor sends local time with an offset, e.g. "2026-11-19T09:51:28-05:00"
+  timestamp: z.iso.datetime({ offset: true }),
   data: z.unknown().optional(),
 });
 export type WebhookEvent = z.infer<typeof WebhookEventSchema>;
