@@ -170,7 +170,7 @@ Resources:
       PackageType: Image
       Architectures: [x86_64]
       Timeout: !Ref LambdaTimeout
-      MemorySize: 512
+      MemorySize: 1024
       Role: !GetAtt ExecutionRole.Arn
       # ----------------------------------------------------------------
       # Explicitly set ImageConfig to match the Dockerfile so that
